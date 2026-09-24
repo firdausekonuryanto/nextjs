@@ -1,15 +1,15 @@
 import "server-only";
 import type { RowDataPacket } from "mysql2";
 import { db } from "./db";
+import { LOW_STOCK } from "./products";
 
+// Notifikasi diambil dari data nyata: produk yang stoknya menipis.
 export type Notification = {
   id: string;
   title: string;
   message: string;
   href: string;
 };
-
-export const LOW_STOCK = 10; // batas stok menipis
 
 export async function getNotifications(): Promise<Notification[]> {
   const [rows] = await db.query<RowDataPacket[]>(

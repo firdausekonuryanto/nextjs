@@ -2,17 +2,14 @@
 
 import { useActionState } from "react";
 import { Button, ButtonLink } from "@/app/components/ui/button";
+import { Field, inputClass } from "@/app/components/ui/form";
+import { Icon } from "@/app/components/ui/icons";
 import {
   createUserAction,
   updateUserAction,
   type UserFormState,
 } from "./actions";
 import type { User } from "@/lib/users";
-
-const inputClass = (error?: string) =>
-  `w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 ${
-    error ? "border-red-500" : "border-slate-300"
-  }`;
 
 // Satu form untuk Tambah & Edit. Kalau `user` ada → mode edit.
 export default function UserForm({ user }: { user?: User }) {
@@ -32,49 +29,47 @@ export default function UserForm({ user }: { user?: User }) {
   return (
     <form
       action={formAction}
-      className={`rounded-xl border bg-white p-5 shadow-sm ${user ? "border-blue-300 ring-2 ring-blue-100" : ""}`}
+      className={`mb-4 rounded-lg border bg-white px-4 py-3 print:hidden ${user ? "border-blue-300 ring-2 ring-blue-100" : ""}`}
     >
-      <h2 className="mb-4 font-semibold">
-        {user ? (
-          <>
-            Edit User <span className="text-slate-400">#{user.id}</span>
-          </>
-        ) : (
-          "Tambah User"
-        )}
-      </h2>
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-sm font-semibold">
+          <span
+            className={`h-2 w-2 rounded-full ${user ? "bg-blue-500" : "bg-emerald-500"}`}
+          />
+          {user ? (
+            <>
+              Edit User <span className="text-slate-400">#{user.id}</span>
+            </>
+          ) : (
+            "Tambah User Baru"
+          )}
+        </h2>
+        <span className="hidden text-xs text-slate-400 sm:block">
+          Password disimpan terenkripsi (bcrypt)
+        </span>
+      </div>
 
-      {/* Desktop: Nama | Email | Role | Password | Tombol dalam 1 baris */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-12 lg:items-start">
-        <label className="block lg:col-span-3">
-          <span className="mb-1 block text-sm font-medium">Nama</span>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-12 lg:items-start">
+        <Field className="lg:col-span-3" label="Nama" required error={e.name}>
           <input
             key={v.name}
             name="name"
             defaultValue={v.name}
+            placeholder="Nama lengkap"
             className={inputClass(e.name)}
           />
-          {e.name && (
-            <span className="mt-1 block text-sm text-red-600">{e.name}</span>
-          )}
-        </label>
-
-        <label className="block lg:col-span-3">
-          <span className="mb-1 block text-sm font-medium">Email</span>
+        </Field>
+        <Field className="lg:col-span-3" label="Email" required error={e.email}>
           <input
             key={v.email}
             name="email"
             type="email"
             defaultValue={v.email}
+            placeholder="nama@email.com"
             className={inputClass(e.email)}
           />
-          {e.email && (
-            <span className="mt-1 block text-sm text-red-600">{e.email}</span>
-          )}
-        </label>
-
-        <label className="block lg:col-span-2">
-          <span className="mb-1 block text-sm font-medium">Role</span>
+        </Field>
+        <Field className="lg:col-span-2" label="Role" error={e.role}>
           <select
             key={v.role}
             name="role"
@@ -84,13 +79,13 @@ export default function UserForm({ user }: { user?: User }) {
             <option value="staff">Staff</option>
             <option value="admin">Admin</option>
           </select>
-          {e.role && (
-            <span className="mt-1 block text-sm text-red-600">{e.role}</span>
-          )}
-        </label>
-
-        <label className="block lg:col-span-2">
-          <span className="mb-1 block text-sm font-medium">Password</span>
+        </Field>
+        <Field
+          className="lg:col-span-2"
+          label="Password"
+          required={!user}
+          error={e.password}
+        >
           <input
             name="password"
             type="password"
@@ -98,19 +93,24 @@ export default function UserForm({ user }: { user?: User }) {
             placeholder={user ? "Kosong = tetap" : "Min. 6 huruf"}
             className={inputClass(e.password)}
           />
-          {e.password && (
-            <span className="mt-1 block text-sm text-red-600">
-              {e.password}
-            </span>
-          )}
-        </label>
-
-        <div className="flex gap-2 sm:col-span-2 lg:col-span-2 lg:pt-6">
-          <Button type="submit" loading={pending} className="flex-1">
+        </Field>
+        <div className="flex gap-2 sm:col-span-2 lg:col-span-2 lg:pt-5">
+          <Button
+            type="submit"
+            loading={pending}
+            size="sm"
+            className="h-9 flex-1"
+          >
+            {!pending && (user ? <Icon.Pencil /> : <Icon.Plus />)}
             {user ? "Update" : "Simpan"}
           </Button>
           {user && (
-            <ButtonLink href="/users" variant="secondary">
+            <ButtonLink
+              href="/users"
+              variant="secondary"
+              size="sm"
+              className="h-9"
+            >
               Batal
             </ButtonLink>
           )}

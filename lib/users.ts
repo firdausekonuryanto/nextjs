@@ -21,11 +21,10 @@ export type UserInput = {
 // Kolom password sengaja TIDAK di-SELECT (seperti $hidden di Model Laravel)
 const COLUMNS = "id, name, email, role, created_at";
 
-export async function getUsers(q = ""): Promise<User[]> {
+export async function getUsers(): Promise<User[]> {
   await connection();
   const [rows] = await db.query<(User & RowDataPacket)[]>(
-    `SELECT ${COLUMNS} FROM users WHERE name LIKE ? OR email LIKE ? ORDER BY id DESC`,
-    [`%${q}%`, `%${q}%`],
+    `SELECT ${COLUMNS} FROM users ORDER BY id DESC`,
   );
   return rows;
 }

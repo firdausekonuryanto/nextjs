@@ -1,5 +1,6 @@
 "use client";
 
+// Kerangka setelah login: Header (atas, penuh) + Sidebar (kiri) + konten.
 import { useState, type ReactNode } from "react";
 import Sidebar from "./sidebar";
 import Header from "./header";
@@ -8,25 +9,34 @@ import type { Notification } from "@/lib/notifications";
 type Props = {
   user: { name: string; role: "admin" | "staff" };
   notifications: Notification[];
+  counts: { products: number };
   children: ReactNode;
 };
 
-export default function AppShell({ user, notifications, children }: Props) {
-  const [open, setOpen] = useState(false); // sidebar HP terbuka?
+export default function AppShell({
+  user,
+  notifications,
+  counts,
+  children,
+}: Props) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="md:flex">
-      <Sidebar role={user.role} open={open} onClose={() => setOpen(false)} />
-      <div className="min-w-0 flex-1">
-        <Header
-          user={user}
-          notifications={notifications}
-          onMenuClick={() => setOpen(true)}
+    <>
+      <Header
+        user={user}
+        notifications={notifications}
+        onMenuClick={() => setOpen(true)}
+      />
+      <div className="md:flex">
+        <Sidebar
+          role={user.role}
+          counts={counts}
+          open={open}
+          onClose={() => setOpen(false)}
         />
-        <main className="px-4 py-8 md:px-8">
-          <div className="mx-auto max-w-5xl">{children}</div>
-        </main>
+        <main className="min-w-0 flex-1 p-4 md:p-5 print:p-0">{children}</main>
       </div>
-    </div>
+    </>
   );
 }

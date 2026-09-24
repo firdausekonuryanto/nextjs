@@ -1,6 +1,7 @@
 "use client";
 
 import { deleteProductAction } from "./actions";
+import { Icon } from "@/app/components/ui/icons";
 
 export default function DeleteButton({
   id,
@@ -11,13 +12,17 @@ export default function DeleteButton({
 }) {
   return (
     <form
+      className="inline-flex"
       action={deleteProductAction.bind(null, id)}
       onSubmit={(e) => {
         if (!confirm(`Hapus "${name}"?`)) e.preventDefault();
       }}
     >
-      <button type="submit" className="text-red-600 hover:underline">
-        Hapus
+      <button
+        type="submit"
+        className="inline-flex items-center gap-1 text-red-600 hover:underline"
+      >
+        <Icon.Trash className="h-3.5 w-3.5" /> Hapus
       </button>
     </form>
   );
