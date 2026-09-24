@@ -74,3 +74,10 @@ export async function updateUser(id: number, data: UserInput) {
 export async function deleteUser(id: number) {
   await db.execute("DELETE FROM users WHERE id = ?", [id]);
 }
+
+export async function getUserForLogin(email: string) {
+  const [rows] = await db.query<
+    (User & { password: string } & RowDataPacket)[]
+  >(`SELECT ${COLUMNS}, password FROM users WHERE email = ?`, [email]);
+  return rows[0];
+}

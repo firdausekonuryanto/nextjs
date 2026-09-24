@@ -1,24 +1,27 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState } from "react";
-import type { UserFormState } from "./actions";
+import { Button, ButtonLink } from "@/app/components/ui/button";
+import {
+  createUserAction,
+  updateUserAction,
+  type UserFormState,
+} from "./actions";
 import type { User } from "@/lib/users";
-import { Button, ButtonLink } from "@/app/components/ui/button"; // ganti import Link
-
-type Props = {
-  action: (prev: UserFormState, formData: FormData) => Promise<UserFormState>;
-  user?: User;
-  submitLabel: string;
-};
 
 const inputClass = (error?: string) =>
   `w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 ${
     error ? "border-red-500" : "border-slate-300"
   }`;
 
-export default function UserForm({ action, user, submitLabel }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+// Satu form untuk Tambah & Edit. Kalau `user` ada → mode edit.
+export default function UserForm({ user }: { user?: User }) {
+  const action = user ? updateUserAction.bind(null, user.id) : createUserAction;
+  const [state, formAction, pending] = useActionState<UserFormState, FormData>(
+    action,
+    {},
+  );
+
   const v = state.values ?? {
     name: user?.name ?? "",
     email: user?.email ?? "",
@@ -29,10 +32,21 @@ export default function UserForm({ action, user, submitLabel }: Props) {
   return (
     <form
       action={formAction}
-      className="space-y-5 rounded-xl border bg-white p-6 shadow-sm"
+      className={`rounded-xl border bg-white p-5 shadow-sm ${user ? "border-blue-300 ring-2 ring-blue-100" : ""}`}
     >
-      <div className="grid gap-5 sm:grid-cols-2">
-        <label className="block">
+      <h2 className="mb-4 font-semibold">
+        {user ? (
+          <>
+            Edit User <span className="text-slate-400">#{user.id}</span>
+          </>
+        ) : (
+          "Tambah User"
+        )}
+      </h2>
+
+      {/* Desktop: Nama | Email | Role | Password | Tombol dalam 1 baris */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-12 lg:items-start">
+        <label className="block lg:col-span-3">
           <span className="mb-1 block text-sm font-medium">Nama</span>
           <input
             key={v.name}
@@ -45,7 +59,7 @@ export default function UserForm({ action, user, submitLabel }: Props) {
           )}
         </label>
 
-        <label className="block">
+        <label className="block lg:col-span-3">
           <span className="mb-1 block text-sm font-medium">Email</span>
           <input
             key={v.email}
@@ -59,7 +73,7 @@ export default function UserForm({ action, user, submitLabel }: Props) {
           )}
         </label>
 
-        <label className="block">
+        <label className="block lg:col-span-2">
           <span className="mb-1 block text-sm font-medium">Role</span>
           <select
             key={v.role}
@@ -75,15 +89,13 @@ export default function UserForm({ action, user, submitLabel }: Props) {
           )}
         </label>
 
-        <label className="block">
+        <label className="block lg:col-span-2">
           <span className="mb-1 block text-sm font-medium">Password</span>
           <input
             name="password"
             type="password"
             autoComplete="new-password"
-            placeholder={
-              user ? "Kosongkan jika tidak diganti" : "Minimal 6 karakter"
-            }
+            placeholder={user ? "Kosong = tetap" : "Min. 6 huruf"}
             className={inputClass(e.password)}
           />
           {e.password && (
@@ -92,15 +104,17 @@ export default function UserForm({ action, user, submitLabel }: Props) {
             </span>
           )}
         </label>
-      </div>
 
-      <div className="flex items-center gap-3 pt-2">
-        <Button type="submit" loading={pending}>
-          {pending ? "Menyimpan..." : submitLabel}
-        </Button>
-        <ButtonLink href="/users" variant="ghost">
-          Batal
-        </ButtonLink>
+        <div className="flex gap-2 sm:col-span-2 lg:col-span-2 lg:pt-6">
+          <Button type="submit" loading={pending} className="flex-1">
+            {user ? "Update" : "Simpan"}
+          </Button>
+          {user && (
+            <ButtonLink href="/users" variant="secondary">
+              Batal
+            </ButtonLink>
+          )}
+        </div>
       </div>
     </form>
   );

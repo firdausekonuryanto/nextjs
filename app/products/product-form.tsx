@@ -1,62 +1,82 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState } from "react";
-import type { FormState } from "./actions";
-import type { ProductInput } from "@/lib/products";
 import { Button, ButtonLink } from "@/app/components/ui/button";
+import {
+  createProductAction,
+  updateProductAction,
+  type FormState,
+} from "./actions";
+import type { Product } from "@/lib/products";
 
-type Props = {
-  action: (prev: FormState, formData: FormData) => Promise<FormState>;
-  product?: ProductInput;
-  submitLabel: string;
-};
+// Satu form untuk Tambah & Edit. Kalau `product` ada → mode edit.
+export default function ProductForm({ product }: { product?: Product }) {
+  const action = product
+    ? updateProductAction.bind(null, product.id)
+    : createProductAction;
+  const [state, formAction, pending] = useActionState<FormState, FormData>(
+    action,
+    {},
+  );
 
-export default function ProductForm({ action, product, submitLabel }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
-
-  // seperti old('name', $product->name)
   const v = state.values ?? {
     name: product?.name ?? "",
     price: product ? String(product.price) : "",
     stock: product ? String(product.stock) : "",
   };
+  const e = state.errors ?? {};
 
   return (
     <form
       action={formAction}
-      className="space-y-5 rounded-xl border bg-white p-6 shadow-sm"
+      className={`rounded-xl border bg-white p-5 shadow-sm ${product ? "border-blue-300 ring-2 ring-blue-100" : ""}`}
     >
-      <Field
-        label="Nama produk"
-        name="name"
-        defaultValue={v.name}
-        error={state.errors?.name}
-      />
-      <div className="grid gap-5 sm:grid-cols-2">
+      <h2 className="mb-4 font-semibold">
+        {product ? (
+          <>
+            Edit Produk <span className="text-slate-400">#{product.id}</span>
+          </>
+        ) : (
+          "Tambah Produk"
+        )}
+      </h2>
+
+      {/* 1 baris di desktop: Nama | Harga | Stok | Tombol */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-12 lg:items-start">
         <Field
+          className="sm:col-span-2 lg:col-span-5"
+          label="Nama produk"
+          name="name"
+          defaultValue={v.name}
+          error={e.name}
+        />
+        <Field
+          className="lg:col-span-2"
           label="Harga (Rp)"
           name="price"
           type="number"
           defaultValue={v.price}
-          error={state.errors?.price}
+          error={e.price}
         />
         <Field
+          className="lg:col-span-2"
           label="Stok"
           name="stock"
           type="number"
           defaultValue={v.stock}
-          error={state.errors?.stock}
+          error={e.stock}
         />
-      </div>
 
-      <div className="flex items-center gap-3 pt-2">
-        <Button type="submit" loading={pending}>
-          {pending ? "Menyimpan..." : submitLabel}
-        </Button>
-        <ButtonLink href="/products" variant="ghost">
-          Batal
-        </ButtonLink>
+        <div className="flex gap-2 sm:col-span-2 lg:col-span-3 lg:pt-6">
+          <Button type="submit" loading={pending} className="flex-1">
+            {product ? "Update" : "Simpan"}
+          </Button>
+          {product && (
+            <ButtonLink href="/products" variant="secondary">
+              Batal
+            </ButtonLink>
+          )}
+        </div>
       </div>
     </form>
   );
@@ -68,15 +88,17 @@ function Field({
   type = "text",
   defaultValue,
   error,
+  className = "",
 }: {
   label: string;
   name: string;
   type?: string;
   defaultValue: string;
   error?: string;
+  className?: string;
 }) {
   return (
-    <label className="block">
+    <label className={`block ${className}`}>
       <span className="mb-1 block text-sm font-medium">{label}</span>
       <input
         key={defaultValue}
